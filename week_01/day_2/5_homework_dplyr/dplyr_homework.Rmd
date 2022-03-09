@@ -133,7 +133,7 @@ dataedit %>%
   summarize(bev_mean=mean(Calories,na.rm=TRUE)) %>% 
   arrange(bev_mean)
 
-#the beverage prep with the least amount of calories was solo, the lowest calorie beverage category was Coffee and as shown above the lowest calorie beverage was Tazo Tea. So judging by the data a Solo Tazo Tea Coffee is what to go for if you are aiming at getting the lowest possible calorie drink. I will not be ordering this at my local Starbucks.
+#the beverage prep with the least amount of calories was solo, the lowest calorie beverage category was Coffee and as shown above the lowest calorie beverage was Tazo Tea (however as we need a coffee drink then it is the next lowest, brewed coffee).. So judging by the data a Solo Brewed Coffee is what to go for if you are aiming at getting the lowest possible calorie drink. I will not be ordering this at my local Starbucks.
 ```
 
 
