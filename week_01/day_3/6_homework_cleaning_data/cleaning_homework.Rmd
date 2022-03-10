@@ -186,9 +186,11 @@ movie_budgets %>%
 Take the original dataset with all the variables. Using `across` and `where`, summarise the number of missing values, first across all columns of type `character`, and then across all columns of type `numeric`.
 
 ```{r}
-movie_budgets %>% 
-  where()
-  summarise(across(where(), ~ sum(is.na(.))))
+movies %>% 
+  summarise(across(where(is.numeric), ~ sum(is.na(.x))))
+
+movies %>%
+  summarise(across(where(is.character), ~sum(is.na(.x))))
 ```
 
 
