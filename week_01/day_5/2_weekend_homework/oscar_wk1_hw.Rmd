@@ -168,14 +168,23 @@ As mentioned before there a number of co-authored books - we will therefore have
 
 ```{r}
 #removing books with more than 3 authors as they are most probably not novels
-#books_clean_authors <- books_clean %>% 
-  #filter(!(str_detect(authors, ".+/.+/.+/.+")))
+#NEW CODE (FOUND SOLUTION IN CLASS)
+books_clean_authors <- books_clean %>% 
+  separate_rows(authors, sep = "/")
 
 #I was going to try to split the dataframe into books with three authors and then two authors, split the rows into different rows with the same data but the different authors and then bind the databases together but honestly have run out of time a bit.
 #I would rather return to this when we have gone over multiple tables as the whole thing becomes so much simpler.
 #For now I will just do analysis while knowing that multiple author books are pretty much not included
 
+#OLD CODE
 books_clean %>% 
+  group_by(authors) %>% 
+  summarise(mean_rating = mean(rating), num_books = n()) %>% 
+  filter(num_books > 4) %>% 
+  slice_max(mean_rating, n = 10)
+
+#NEW CODE
+books_clean_authors %>% 
   group_by(authors) %>% 
   summarise(mean_rating = mean(rating), num_books = n()) %>% 
   filter(num_books > 4) %>% 
@@ -186,7 +195,14 @@ Unfortunately we are still affected by the co-authored books as we can see that 
 I suspect this will affect us much more though on calculating the authors with the highest number of books, as I'm about the do below:
 
 ```{r}
+#OLD CODE
 books_clean %>% 
+  group_by(authors) %>% 
+  summarise(mean_rating = mean(rating), num_books = n()) %>% 
+  slice_max(num_books, n = 10)
+
+#NEW CODE
+books_clean_authors %>% 
   group_by(authors) %>% 
   summarise(mean_rating = mean(rating), num_books = n()) %>% 
   slice_max(num_books, n = 10)
@@ -195,6 +211,7 @@ It still looks good, however we are definitely going to be missing some people w
 As a little test, I experimented below with looking at specific authors to see if they would've been on the list had we included co-authored books
 
 ```{r}
+#OLD CODE
 books_clean %>%
   filter(str_detect(authors, "Shakespeare")) %>% 
   summarise(author = authors, num_books = n())
@@ -202,6 +219,7 @@ books_clean %>%
 As we can see, Shakespeare actually has more published books (at 32), than P.G. Wodehouse.
 
 ```{r}
+#OLD CODE
 books_clean %>%
   filter(str_detect(authors, "P.G. Wodehouse")) %>% 
   summarise(author = authors, num_books = n())
