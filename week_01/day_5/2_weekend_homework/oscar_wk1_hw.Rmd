@@ -1,0 +1,224 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# dplyr Weekend Homework - Oscar Chapman
+
+### __Loading and Viewing Data__
+
+```{r}
+library(tidyverse)
+
+books <- read_csv("data/books.csv")
+
+glimpse(books)
+
+summary(books)
+
+colSums(is.na(books))
+#We can see from the last function that there are actually no NAs in the dataframe
+```
+
+### __Cleaning__
+
+
+- Not all values in the date column follow the form DD/MM/YYYY if they have less than 10 days or 
+
+- To fix this we can use the as.Date function to convert the string dates to the Universal format of YYYY/MM/DD
+
+- This will work fine as it can recognise the first problem as well as any NA values
+
+```{r}
+books_date <- books %>% 
+ mutate(publication_date = as.Date(publication_date,"%m/%d/%Y"))
+
+books_date <- books_date %>% 
+  drop_na(publication_date)
+
+nrow(books) - nrow(books_date)
+#two rows lost due to NA value produced by as.Date() which is fine
+```
+
+- I would rather the language column had more descriptive values rather than "fre" or "eng"
+Below I check what values there are and then use recode to change them to better names
+
+```{r}
+books_date %>% 
+  select(language_code) %>% 
+  group_by(language_code) %>% 
+  summarise((n()))
+```
+- After looking at the summary, the decision was made that there is such a low number of non English (i.e. eng, en-US...) books that it probably is not worth cleaning this column as we wouldn't be able to find many meaningful conclusions from it
+
+- Also, instead of having both the ISBN and ISBN13 number, we'll just keep the ISBN13 as it's a newer standard
+
+- We will therefore delete the "isbn" and "language_code" columns
+
+```{r}
+books_date <- books_date %>% 
+  select(-language_code, -isbn)
+```
+
+
+- I am interested in novels for the analysis, which are more than 200 words usually, so we will drop rows with less than 150
+
+- Similarly we can't take much from books with less than 500 ratings
+
+```{r}
+#take out any NAs and any with under 150 pages
+
+books_date_page_rating <- books_date %>% 
+  filter(!is.na(num_pages),
+         num_pages > 150,
+         !is.na(ratings_count),
+         ratings_count > 500)
+
+books_date_page_rating %>% 
+  nrow()
+
+#We have just over 5000 observations but still have plenty for good analysis
+```
+
+- There are some books with the exact same title but different ISBN13 numbers and bookID (Lord of the Rings Books #1-3 is the one I noticed)
+
+- All this means is we have to be careful to use the bookID rather than the title for analysis
+
+```{r}
+#Checking whether the bookID can be used as the key for an independant book
+
+books_date_page_rating %>% 
+  group_by(bookID) %>% 
+  select(bookID, title) %>% 
+  summarise(title = title, multiples_of_ID = n()) %>% 
+  filter(multiples_of_ID > 1)
+
+#As there is an empty dataframe returned, there are no bookID's repeated and therefore we can use it as a primary key
+#We can then delete rowid as it has no use
+
+books_date_page_rating <- books_date_page_rating %>% 
+  select(-rowid)
+```
+- Right away I can see that some co-authored books (Harry Potter in this case) list the authors together, which would make it hard to see which authors have been involved in a certain book.
+
+- This is hard to do without making a database with multiple tables (which I won't do as we haven't got to that stage)
+
+- What I'll try to do is try to use regex to split the rows with multiple names into duplicate rows with the different authors inside (so there is a row for each author of a book)
+
+```{r}
+#books_date_page_rating_author <- books_date_page_rating %>% 
+  #filter(str_detect(authors, ".+/.+")) %>% 
+  #summarise(str_extract_all(authors, "/(.+)"))
+  
+# In hindsight I think my regex is quite rusty and a few things have confused me about how to use it inside tidyverse so for now I will leave this and return to it when we've learnt about it later in the course
+```
+
+- I also noticed that some of the rows have similar names for the same publishers (e.g. "Farrar Straus and Giroux" and "Farrar Straus Giroux", "Scholastic" and "Scholastic Inc.") however I do not think I have good enough data wrangling skills to be able to provide a net solution for all cases of this
+
+- The most we can do then is just to consider this when looking at the analysis
+
+
+### __Exploring the data__
+
+- One thing to investigate is how the data changes year by year
+
+- It would be good to know which years have the best average rating and which years have the most books released
+
+```{r}
+#final sorting into books_clean for analysis
+books_clean <- books_date_page_rating %>% 
+  rename(rating = average_rating) %>% 
+  select(-text_reviews_count)
+
+summary(books_clean)
+
+books_by_year <- books_clean %>% 
+  group_by(lubridate::year(publication_date)) %>%
+  summarise(num_books = n(), mean_rating = mean(rating), mean_rating_count = mean(ratings_count))
+
+head(books_by_year)
+
+#looking at the dataframe there are a lot of rows with a very low amount of books
+#it seems like this occurs for very old or very recent dates
+#we will filter out for years with more than 5 publications
+
+books_by_year <- books_by_year %>% 
+  filter(num_books > 5)
+
+#years with best rating
+books_by_year %>% 
+  slice_max(order_by = mean_rating, n = 5)
+```
+We see a strong trend some of the older years (1975-1985) have better average ratings.
+However these could be misrepresentative of the overall trend as we can see that those years have
+comparitively low numbers of books and, for some of them, low numbers of ratings for those books.
+
+```{r}
+#years with highest number of books
+books_by_year %>% 
+  slice_max(order_by = num_books, n = 10)
+```
+We can see from this that there tends to be more books from the early 2000s in this database.
+This may just be because this is a sample from a larger dataframe or potentially that we filtered out a lot of the other years with the cleaning of the dataframe.
+As there are books from 2012 onwards in the dataframe though (just a very small amount), I do think it is that this dataframe is a sample.
+
+- Author with most books and highest rating
+
+As mentioned before there a number of co-authored books - we will therefore have to try and do a stringr search for rows containing a certain name
+
+```{r}
+#removing books with more than 3 authors as they are most probably not novels
+#books_clean_authors <- books_clean %>% 
+  #filter(!(str_detect(authors, ".+/.+/.+/.+")))
+
+#I was going to try to split the dataframe into books with three authors and then two authors, split the rows into different rows with the same data but the different authors and then bind the databases together but honestly have run out of time a bit.
+#I would rather return to this when we have gone over multiple tables as the whole thing becomes so much simpler.
+#For now I will just do analysis while knowing that multiple author books are pretty much not included
+
+books_clean %>% 
+  group_by(authors) %>% 
+  summarise(mean_rating = mean(rating), num_books = n()) %>% 
+  filter(num_books > 4) %>% 
+  slice_max(mean_rating, n = 10)
+```
+This looks very reasonable - we see a lot of well known authors such as Tolkein, J.K.Rowling, Patrick'O'Brian etc. and we have filtered the results so that the authors have to have at least 5 books.
+Unfortunately we are still affected by the co-authored books as we can see that J.K.rowling takes up two spots on this rating list.
+I suspect this will affect us much more though on calculating the authors with the highest number of books, as I'm about the do below:
+
+```{r}
+books_clean %>% 
+  group_by(authors) %>% 
+  summarise(mean_rating = mean(rating), num_books = n()) %>% 
+  slice_max(num_books, n = 10)
+```
+It still looks good, however we are definitely going to be missing some people who have co-authored books.
+As a little test, I experimented below with looking at specific authors to see if they would've been on the list had we included co-authored books
+
+```{r}
+books_clean %>%
+  filter(str_detect(authors, "Shakespeare")) %>% 
+  summarise(author = authors, num_books = n())
+```
+As we can see, Shakespeare actually has more published books (at 32), than P.G. Wodehouse.
+
+```{r}
+books_clean %>%
+  filter(str_detect(authors, "P.G. Wodehouse")) %>% 
+  summarise(author = authors, num_books = n())
+```
+Although Wodehouse should have had 32 books, had we included his co-authored one.
+Looking at the co-authored books though, it's pretty clear that this is a collection of books, and whether you should include books like that is a bit murky.
+
+- Books with highest rating (more than 1000 ratings)
+
+```{r}
+books_clean %>% 
+  filter(ratings_count > 1000) %>% 
+  select(title, rating, ratings_count, num_pages) %>% 
+  slice_max(rating, n = 10)
+```
+We can see that dominating the top 5 are the Harry Potter and the Calvin and Hobbes books.
+The Calvin and Hobbes comics do however have not a lot of pages and technically aren't a novel.
+What would have been helpful is a way to classify the books into different types (e.g. comic, novel, religious text), however it would have been hard to do this based on number of pages alone.
+As we can see, The Complete Calvin and Hobbes wouldn't have been caught by that had we done it.
+The Bible also does respectfully well.
