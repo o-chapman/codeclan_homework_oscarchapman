@@ -182,7 +182,7 @@ books_clean %>%
   slice_max(mean_rating, n = 10)
 ```
 This looks very reasonable - we see a lot of well known authors such as Tolkein, J.K.Rowling, Patrick'O'Brian etc. and we have filtered the results so that the authors have to have at least 5 books.
-Unfortunately we are still affected by the co-authored books as we can see that J.K.rowling takes up two spots on this rating list.
+Unfortunately we are still affected by the co-authored books as we can see that J.K.Rowling takes up two spots on this rating list.
 I suspect this will affect us much more though on calculating the authors with the highest number of books, as I'm about the do below:
 
 ```{r}
