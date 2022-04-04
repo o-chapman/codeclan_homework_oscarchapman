@@ -64,3 +64,6 @@ SELECT
 	MAX(salary) AS max_salary
 FROM employees
 WHERE department = 'Engineering';
+
+SELECT first_name, last_name, fte_hours, salary, (fte_hours*salary) AS effective_yearly_salary
+FROM employees
