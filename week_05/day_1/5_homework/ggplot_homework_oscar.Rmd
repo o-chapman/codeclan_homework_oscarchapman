@@ -36,6 +36,33 @@ The data for this assignment is provided in the `CodeClanData` package.
 
 Take a little time before you start to familiarise yourself with the data.
 
+##############################
+FOR EXTENSION THEME:
+
+```{r, eval=TRUE, echo=FALSE, fig.cap="", out.width = '100%'}
+knitr::include_graphics("palette.JPG")
+
+theme_t <- function(base_size = 12){
+  list(
+    theme(title = element_text(size = 20),
+          axis.text = element_text(size = 8),
+          plot.background = element_rect(fill = 'white', colour = NA),
+          panel.grid = element_line(colour = "grey50")),
+    scale_color_manual(values = col_scheme),
+    scale_fill_manual(values = col_scheme)
+  )
+}
+
+## PLAYED AROUND WITH MAKING A THEME BUT DIDN'T GET IT WORKING BEFORE I
+## RAN OUT OF TIME
+```
+
+```{r, echo=TRUE}
+col_scheme <- c("#E89FE9", "#50434F", "#B6A7B5", "#F9A472", "#BD7040")
+```
+#################################
+
+
 # MVP
 
 ## Part 1
@@ -56,7 +83,8 @@ Take the data in the dataset `qb_revenue_breakdown` and make a stacked bar chart
 ggplot(qb_revenue_breakdown) +
   aes(x = Year, y = Revenue, fill = Product) +
   geom_bar(stat = "identity") +
-  labs(title = "Sources of Revenue by Year")
+  labs(title = "Sources of Revenue by Year") +
+  theme_t()
 ```
 
 **Questino 2.**  
@@ -66,7 +94,8 @@ Make a line chart showing monthly sales of the "flagship product" - the 'KwikBit
 ```{r}
 ggplot(qb_monthly_sales %>% filter(Cashflow == "Kwikbit Unit 1 Sales")) +
   aes(Date, Amount) +
-  geom_line(colour = "red")
+  geom_line(colour = "red") +
+  theme_t()
 ```
 
 **Question 3.**  
@@ -75,7 +104,8 @@ Make a line chart showing monthly revenue and costs over the last year. This dat
 
 ```{r}
 ggplot(qb_monthly_sales %>% filter(Cashflow != "Kwikbit Unit 1 Sales")) +
-  geom_line(aes(Date, Amount, colour = Cashflow))
+  geom_line(aes(Date, Amount, colour = Cashflow)) +
+  theme_t()
 ```
 
 **Question 4.**  
@@ -85,7 +115,9 @@ Show annual sales of personal fitness trackers over the last 5 years broken down
 ```{r}
 ggplot(qb_competitors) +
   aes(Year, Revenue, fill = Company) +
-  geom_area()
+  geom_area() +
+  theme_t()
+  #scale_fill_manual(values = col_scheme)
 ```
 
 **Question 5.**  
@@ -96,7 +128,9 @@ Now show the sales from the four competitors as a line graph. Include an extra l
 ggplot(qb_competitors) +
   aes(Year, Revenue, colour = Company) +
   geom_line() +
-  geom_point()
+  geom_point() +
+  labs(title = "Revenue vs. Year for QKBit's competitors") +
+  theme_t()
 ```
 
 **Question 6.**  
@@ -111,8 +145,7 @@ ggplot(qb_device_data %>% group_by(device, id, hours) %>% summarise(avg_count = 
   labs(title = "QKBit steps counted vs. Competitors",
        x = "time (hrs)",
        y = "steps") +
-  scale_color_manual(values = col_scheme)
-  #theme_test()
+  theme_t()
 ```
 
 ## Part 2 
@@ -131,13 +164,15 @@ Take the plots that you produced in part one and now polish them by:
 ```{r, eval=TRUE, echo=FALSE, fig.cap="", out.width = '100%'}
 knitr::include_graphics("palette.JPG")
 
-theme_test <- function(){
-  list(theme(text = element_text(size = 12),
-        title = element_text(size = 20),
-        axis.text = element_text(size = 8),
-        plot.background = element_rect(fill = 'white', colour = 'grey')),
-  scale_color_manual(values = col_scheme))
-  #scale_fill_brewer(palette = col_scheme)
+theme_t <- function(base_size = 12){
+  list(
+    theme(title = element_text(size = 20),
+          axis.text = element_text(size = 8),
+          plot.background = element_rect(fill = 'white', colour = NA),
+          panel.grid = element_line(colour = "grey50")),
+    scale_color_manual(values = col_scheme),
+    scale_fill_manual(values = col_scheme)
+  )
 }
 
 ## PLAYED AROUND WITH MAKING A THEME BUT DIDN'T GET IT WORKING BEFORE I
