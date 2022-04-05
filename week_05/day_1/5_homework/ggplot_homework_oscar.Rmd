@@ -139,7 +139,7 @@ Now the company wants to compare the number of steps that their device counts vs
 
 ```{r}
 ggplot(qb_device_data %>% group_by(device, id, hours) %>% summarise(avg_count = mean(counts))) +
-  aes(hours, avg_count) +
+  aes(hours, avg_count, color = device) +
   geom_line() +
   facet_grid(device~id) +
   labs(title = "QKBit steps counted vs. Competitors",
@@ -168,7 +168,7 @@ theme_t <- function(base_size = 12){
   list(
     theme(title = element_text(size = 20),
           axis.text = element_text(size = 8),
-          plot.background = element_rect(fill = 'white', colour = NA),
+          panel.background = element_rect(fill = 'white'),
           panel.grid = element_line(colour = "grey50")),
     scale_color_manual(values = col_scheme),
     scale_fill_manual(values = col_scheme)
