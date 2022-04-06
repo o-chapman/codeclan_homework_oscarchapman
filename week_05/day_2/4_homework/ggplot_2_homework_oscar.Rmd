@@ -176,7 +176,21 @@ ggplot(backpack) +
   theme_minimal()
 ```
 Graph 1:
-- 
+- We see that there are more females getting back problems around 6-16kg,
+however the smoothed line shows that this is due to there being more data for 
+that weight of bag and that there is consistently more back problems at 16kg+
+bags
+
+Graph 2:
+- For males there is a fairly clear peak in back problems around 160/170lbs
+body weight
+- For females it seems we have two peaks: at about 120lbs and 160/170lbs
+
+Graph 3:
+- For females there is a clear positive correlation between the ratio of
+bag/body weight and back problems
+- For males there is a much less strong relationship, however this could be
+because there are not many males with back problems
 
 
 # Extensions
