@@ -213,6 +213,10 @@ backpack %>%
        y = "no. of back problems\n",
        x = "\nyear")
 ```
+- There seems to be a correlation as higher years have much higher numbers of
+back problems.
+- This makes sense as they have had more years to develop the problems, an back
+problems likely won't go away once you've gotten them
 
 
 **Question 2.** 
