@@ -58,9 +58,12 @@ ggplot(backpack) +
   labs(x = "backpack weight (kg)",
        y = "number of students") +
   scale_y_continuous(breaks = seq(0, 12, 1)) +
+  scale_x_continuous(breaks = seq(0, 36, 5)) +
   coord_flip() +
   theme_minimal()
 ```
+- It is clear that most students have backpacks between 5 and 15 kg, which is
+something to consider when analysing the following graphs
 
 
 **Question 3.**  
@@ -74,9 +77,11 @@ ggplot(backpack) +
   labs(x = "\nbackpack weight (kg)",
        y = "number of students\n") +
   scale_y_continuous(breaks = seq(0, 10, 1)) +
-  scale_x_continuous(breaks = seq(0,35, 2))
+  scale_x_binned(n.breaks = 18, limits = c(0, 36)) +
   theme_minimal()
 ```
+- We see that males tend to have heavier bags than females (up until 10kg
+there are more or an equal amount of females than males with that weight of bag)
 
 
 **Question 4.**  
@@ -90,6 +95,9 @@ ggplot(backpack) +
   geom_smooth() +
   theme_minimal()
 ```
+- There is a clear slight positive trend between backpack weight and body weight,
+however after about 200lbs this stops correlating as strongly (probably because
+body weights aren't commonly heavier than that so we have less data)
 
 
 **Question 5.**  
@@ -104,6 +112,9 @@ ggplot(backpack) +
   facet_grid(~sex)
   theme_minimal()
 ```
+- Not particularly, there is still the positive trend for both genders
+- For men, the trend positive trend lasts longer (up until about 200lbs) just
+because weights are, in general, higher
 
 
 **Question 6.**  
@@ -139,13 +150,33 @@ Try both `backpack_weight` and `body_weight` as well as the `ratio`.
 ggplot(backpack) +
   aes(x = backpack_weight, y = back_problems, fill = sex) +
   geom_col() +
-  facet_grid(~sex)
+  geom_smooth(se=F, colour = "grey50") +
+  facet_grid(~sex) +
+  scale_x_continuous(limits = c(0, 26)) +
+  theme_minimal()
+
 
 ggplot(backpack) +
-  aes(x = body_weight, y = back_problems, fill = sex) +
-  geom_col() +
-  facet_grid(~sex)
+  aes(x = body_weight, y = back_problems) +
+  geom_col(aes(fill = sex)) +
+  geom_smooth(se=F, colour = "grey50") +
+  facet_grid(~sex) +
+  scale_x_binned(n.breaks = 15, limits = c(100, 220)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, size = 7)) +
+  labs(title = "back problems vs. body weight for different genders\n",
+       x = "\nbody weight (lbs)",
+       y = "number of students with back problems\n")
+
+
+ggplot(backpack) +
+  aes(x = ratio, y = back_problems, colour = sex) +
+  geom_smooth() +
+  facet_grid(~sex) +
+  theme_minimal()
 ```
+Graph 1:
+- 
 
 
 # Extensions
@@ -156,9 +187,25 @@ ggplot(backpack) +
 
 Does reported backpain differ across the year groups? Ignore year 0 in your data.  
 
+```{r}
+backpack %>% 
+  mutate(year = factor(year, levels = c(0,1,2,3,4,5,6))) %>% 
+  ggplot() +
+  aes(x = year, y = back_problems, fill = sex) +
+  geom_col() +
+  scale_x_discrete(breaks = seq(1, 6)) +
+  theme_minimal() +
+  labs(title = "back problems vs. year of study\n",
+       y = "no. of back problems\n",
+       x = "\nyear")
+```
+
 
 **Question 2.** 
 
 Is there a difference between how heavy the bags those in different years carry?
 
+```{r}
+
+```
 
