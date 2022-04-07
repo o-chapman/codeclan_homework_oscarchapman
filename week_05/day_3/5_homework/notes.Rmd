@@ -5,14 +5,24 @@ output: html_notebook
 
 
 ```{r}
+library(here)
+library(tidyverse)
+library(ggplot2)
+amazon_reviews <- read_csv(here("data/amazon_reviews.csv"))
+
 amazon_reviews %>% 
   filter(name == "Kindle") %>% 
   ggplot() +
   aes(x = date, y = rating) +
-  geom_line()
+  geom_col() +
+  theme_minimal()
 
 amazon_reviews %>% 
   filter(name == "Kindle") %>% 
   nrow()
+
+most_common_words <- amazon_reviews %>% 
+  
+  
 ```
 
