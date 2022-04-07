@@ -1,0 +1,18 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+amazon_reviews %>% 
+  filter(name == "Kindle") %>% 
+  ggplot() +
+  aes(x = date, y = rating) +
+  geom_line()
+
+amazon_reviews %>% 
+  filter(name == "Kindle") %>% 
+  nrow()
+```
+
