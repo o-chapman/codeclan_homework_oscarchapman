@@ -28,6 +28,7 @@ Load the data again, `clean_names()`, and re-familiarise yourself with it
 ```{r}
 library(tidyverse)
 library(infer)
+library(janitor)
 
 ames <- read_csv("data/ames.csv") %>% 
   clean_names()
@@ -66,7 +67,15 @@ ames %>%
 Compute and visualise a bootstrap sampling distribution for the `mean(lot_area)` of the sold houses.
 
 ```{r}
+bootstrap_dist <- ames %>%
+    specify(response = sale_price) %>%
+    generate(reps = 1000, type = "bootstrap") %>%
+    calculate(stat = "mean")
 
+bootstrap_dist %>% 
+  ggplot() +
+  aes(x = stat) +
+  geom_histogram(color = "white", fill = "turquoise")
 ```
 
 <br>
@@ -74,10 +83,32 @@ Compute and visualise a bootstrap sampling distribution for the `mean(lot_area)`
 **Task 4.**  
 Use your bootstrap distribution to calculate a $95\%$ CI for `mean(lot_area)`, and visualise it on the distribution
 
+```{r}
+ci_95 <- bootstrap_dist %>% 
+  get_ci(level = 0.95, type = "percentile")
+
+bootstrap_dist %>% 
+  ggplot() +
+  aes(x = stat) +
+  geom_histogram(color = "white", fill = "turquoise")
+  shade_ci(endpoints = ci_95)
+```
+
 <br>
 
 **Task 5.**  
 You would like to know the `mean(lot_area)` of the sold houses with higher confidence. Calculate the $99\%$ CI for this variable (you can re-use your bootstrap distribution from above). Is it narrower or broader than the $95\%$ CI? Does that make sense?
+
+```{r}
+ci_99 <- bootstrap_dist %>% 
+  get_ci(level = 0.99, type = "percentile")
+
+bootstrap_dist %>% 
+  ggplot() +
+  aes(x = stat) +
+  geom_histogram(color = "white", fill = "turquoise")
+  shade_ci(endpoints = ci_99)
+```
 
 <br>
 
