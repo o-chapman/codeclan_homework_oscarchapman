@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, messages = FALSE, fig.align 
 ## The Titanic
 
 ```{r, echo=FALSE, fig.cap="**Fig. 1.** The RMS Titanic leaving Southport, 10th April 1912 (public domain)", out.width = '60%'}
-knitr::include_graphics("images/RMS_Titanic.jpg")
+#knitr::include_graphics("images/RMS_Titanic.jpg")
 ```
 
 A data set detailing the survival or death of passengers and crew members on the RMS Titanic is given in the `data` folder for this homework - use this data and **not** the built-in `Titanic` dataset in `R`. 
@@ -153,6 +153,19 @@ I roll six dice:
 <summary>**Hint**</summary>
 Have a look at the `isin()` function in the `prob` package. For example, to `filter` all rows containing $6$, $1$, $2$ in that order, you could use `isin(., c(6, 1, 2), ordered = TRUE)`
 </details>
+
+```{r}
+(1/6)^6
+
+six_dice <- rolldie(6)
+
+names(six_dice)
+
+true_cases <- six_dice %>%
+  filter(isin(., 1:6, ordered = FALSE))
+
+nrow(true_cases)/nrow(six_dice)
+```
 
 <br>
 **Question 6.**  
