@@ -68,20 +68,24 @@ The p-value is 0 and therefore we can reject the null hypothesis and accept this
 Perform an appropriate statistical test to determine whether omnivores sleep for significantly longer than herbivores, on average.
 
 ```{r}
-# H0: The difference in means between a sleep for omnivores and carnivores is 0
+# H0: The difference in means between a sleep for herbivores and omnivores is 0
 # H1: The difference is more than 0
 
-observed_stat <- mean((msleep %>% filter(vore == "carni"))$sleep_total, na.rm = TRUE) - mean((msleep %>% filter(vore == "omni"))$sleep_total, na.rm = TRUE)
+observed_stat <- mean((msleep %>% filter(vore == "omni"))$sleep_total, na.rm = TRUE) - mean((msleep %>% filter(vore == "herbi"))$sleep_total, na.rm = TRUE)
 
 null_distribution <- msleep %>%
-  filter(vore %in% c("carni", "omni")) %>% 
+  filter(vore %in% c("omni", "herbi")) %>% 
   specify(sleep_total ~ vore) %>%
   hypothesize(null = "independence") %>%
   generate(reps = 10000, type = "permute") %>%
-  calculate(stat = "diff in means", order = c("carni", "omni"))
+  calculate(stat = "diff in means", order = c("omni", "herbi"))
 
 null_distribution %>% 
-  get_p_value(obs_stat = observed_stat, direction = "both")
+  get_p_value(obs_stat = observed_stat, direction = "right")
+
+null_distribution %>% 
+  visualise(bins = 30) +
+  shade_p_value(obs_stat - observed_stat, direction = "right")
 ```
 the p-value is fairly significant, meaning that there is not enough evidence to suggest that the alternative to the null hypothesis
 
