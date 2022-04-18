@@ -1,0 +1,120 @@
+---
+title: "Statistics & Hypothesis testing - PDA"
+output:
+  html_document:
+    df_print: paged
+---
+
+For these tasks you will use the `penguins` dataset from the `palmerpenguins` package.
+
+Here is a set-up chunk to get you started:
+
+```{r, message = F, warning = F}
+
+# install.packages("palmerpenguins")
+library(palmerpenguins)
+library(tidyverse)
+library(ggplot2)
+library(e1071)
+library(infer)
+
+penguins <- penguins 
+
+```
+
+ 
+We are interested in how **bill length** differ between the three species of penguin (Adelie, Chinstrap & Gentoo) in this dataset.
+
+# 1. Exploratory analysis 
+
+Explore the dataset using visualisations, and keep in mind the question you're trying to answer above.
+
+**Write a short summary of the results.**
+
+```{r}
+penguins_summarised <- penguins %>%
+  group_by(species, sex) %>% 
+  summarise(avg_bill_depth = mean(bill_depth_mm, na.rm = TRUE),
+            avg_bill_length = mean(bill_length_mm, na.rm = TRUE))
+
+penguins_summarised %>% 
+  ggplot() +
+  geom_col(aes(x = species, y = avg_bill_depth, fill = sex), color = "white") +
+  labs(y = "average bill depth\n",
+       x = "\nspecies") +
+  theme_minimal() +
+  facet_wrap(~sex)
+
+penguins_summarised %>% 
+  ggplot() +
+  geom_col(aes(x = species, y = avg_bill_length, fill = sex), color = "white") +
+  labs(x = "\nspecies",
+       y = "average bill length\n") +
+  theme_minimal() +
+  facet_wrap(~sex)
+```
+
+
+# 2. Summary statistics
+
+Calculate the following summary statistics to describe bill length for each species: 
+
+* measures of centrality (mean & median)
+* spread (standard deviation)
+* skewness (you can use the `skewness()` function from the `e1071` package)
+
+**Write a short summary of the results.**
+
+```{r}
+penguins %>%
+  group_by(species) %>% 
+  summarise(avg_bill_length = mean(bill_length_mm, na.rm = TRUE),
+            median_bill_length = median(bill_length_mm, na.rm = TRUE),
+            sd_bill_length = sd(bill_length_mm, na.rm = TRUE),
+            skewness_bill_length = skewness(bill_length_mm, na.rm = TRUE))
+
+# The skewness seems to be quite negligible for the Adelie and Chinstrap species, indicating that there is a pretty consistent number of penguins for each bill length, whereas the Gentroo has a slight positive (right) skew.
+# The standard deviation of the Chinstrap species suggests that the data varies a bit more around the mean and the values being lower than this for Gentroo and Adelie suggest that they vary less
+# The mean being further away from the median like with the Chinstrap species may mean that there is more outliers in the data, as these would 'pull the mean away from the median (most likely)
+```
+
+# 3. Hypothesis test & probability
+
+Perform a suitable hypothesis test to check whether the mean bill length of Gentoo is significantly longer than the mean bill length of Adelie. 
+
+Visualise the p-value on the null distribution.
+
+**Write an interpretation of your findings.**
+
+```{r}
+# H0: The mean bill lengths of gentroo penguins is less than or the same as Adelie
+# H1: The mean bill length of Gentoo is more than the mean bill length of Adelie
+
+observed_stat <- mean((penguins %>% filter(species == "Gentoo"))$bill_length_mm, na.rm = TRUE) - mean((penguins %>% filter(species == "Adelie"))$bill_length_mm, na.rm = TRUE)
+
+null_distribution <- penguins %>% 
+  group_by(species) %>% 
+  filter(species != "Chinstrap") %>% 
+  specify(bill_length_mm ~ species) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 10000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("Gentoo", "Adelie"))
+
+null_distribution %>%
+  visualise(bins = 30) +
+  shade_p_value(obs_stat = observed_stat, direction = "right")
+
+null_distribution %>% 
+  get_p_value(obs_stat = observed_stat, direction = "right")
+
+# The p-value of the test is 0, which is well below the significance value of 0.05
+# Therefore we can reject the null hypothesis and have evidence that Gentoo penguins have a longer bill length than Adelie
+```
+
+**Note:** To meet the PDA outcome, you'll want to describe how your obtained p-value and null distribution relate to the concept of probability - so try to write a short explanation in your interpretation. You can also expand on probability distributions/anything related to probability to show your understanding of probability. So, rather than simply reporting the p-value and whether it is significant, show you understand what it means.
+
+# PDA outcomes covered by these tasks
+
+* 4.1 __Exploratory data analysis__ and targeted data analysis (__hypothesis testing__)
+* 4.3 Probability and __probability distributions__
+* 4.4 Summary statistics including __measures of centrality, spread and skewness__
