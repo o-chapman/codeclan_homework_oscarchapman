@@ -1,0 +1,143 @@
+---
+title: "Homework - features and elements of multiple regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+<hr>
+
+# MVP
+
+<br>
+
+1. Load the `housing_prices.csv` data set and undertake an initial exploration of the data. You will find details on the data set on the relevant [Kaggle page](https://www.kaggle.com/camnugent/california-housing-prices)
+
+```{r}
+library(GGally)
+library(tidyverse)
+
+housing <- read_csv("data/housing_prices.csv") %>% 
+  janitor::clean_names()
+
+head(housing)
+```
+
+<br>
+
+2. We expect the `total_rooms` of houses to be strongly correlated with `total_bedrooms`. Use `ggpairs()` to investigate correlations between these two variables.
+
+```{r}
+ggpairs(housing[,c("total_rooms", "total_bedrooms")])
+```
+It has a very strong correlation coeff of 0.934
+
+<br> 
+
+3. So, we do find significant correlations. Let's drop `total_bedrooms` from the dataset, and use only `total_rooms` going forward.
+
+```{r}
+housing_tidy <- housing %>% 
+  select(-total_bedrooms)
+```
+
+<br>
+
+4. We are interested in developing a regression model for the `median_house_value` of a house in terms of the possible predictor variables in the dataset. 
+
+  i. Use `ggpairs()` to investigate correlations between `median_house_value` and the predictors (this may take a while to run, don't worry, make coffee or something).
+
+```{r, message = FALSE}
+ggpairs(housing_tidy)
+```
+
+  ii. Perform further `ggplot` visualisations of any significant correlations you find.
+
+```{r}
+housing_tidy %>% 
+  ggplot() +
+  aes(x = median_income, y = median_house_value) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE)
+```
+
+```{r}
+housing_tidy %>% 
+  ggplot() +
+  aes(x = latitude, y = median_house_value) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE)
+```
+
+```{r}
+housing_tidy %>% 
+  ggplot() +
+  aes(x = total_rooms, y = median_house_value) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE)
+```
+
+```{r}
+housing_tidy %>% 
+  ggplot() +
+  aes(x = ocean_proximity, y = median_house_value) +
+  geom_boxplot()
+```
+
+<br>
+
+5. Shortly we may try a regression model to fit the categorical predictor `ocean_proximity`. Investigate the level of `ocean_proximity` predictors. How many dummy variables do you expect to get from it?  
+  
+There are 5 levels so we'd expect to get 4 dummy variable as one would be inferred by the other 4.
+
+<br>
+ 
+6. Start with simple linear regression. Regress `median_house_value` on `median_income` and check the regression diagnostics.
+
+```{r}
+model1 <- lm(median_house_value ~ median_income, data = housing_tidy)
+plot(model1)
+```
+
+<br> 
+
+7. Add another predictor of your choice. Check your assumptions, diagnostics, and interpret the model.
+
+```{r}
+model2 <- lm(median_house_value ~ median_income + total_rooms, data = housing_tidy)
+
+plot(model2)
+```
+
+# Extension
+    
+<br>
+
+8. Try adding an interaction between `log(medium_income)` and your chosen categorical predictor. Do you think this interaction term is statistically justified?
+
+```{r}
+model3 <- lm(log(median_house_value) ~ log(median_income) + ocean_proximity + log(median_income):ocean_proximity, data = housing_tidy)
+summary(model3)
+
+anova(model2, model3)
+```
+
+<br>
+
+9. Find and plot an appropriate visualisation to show the effect of this interaction
+
+```{r}
+
+```
+
+
