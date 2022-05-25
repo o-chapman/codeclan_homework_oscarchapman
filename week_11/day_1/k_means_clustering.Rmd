@@ -1,0 +1,10 @@
+---
+title: "K-MEANS CLUSTERING"
+output: html_notebook
+---
+
+The aim of k-means clustering is to segment your data into clusters which hold the properties: all of a cluster's data points should be similar to each other and data points from different clusters should be as different to each other as possible.
+
+With k-means clustering you start off with raw, unsorted data and randomly select k data points which are going to be your initial clusters. You then group the other data points to their nearest cluster data point. Once all of the points are sorted into k clusters, you calculate the mean and variation of that cluster. The variation acts as a quality check for the cluster. We then redo this process and select different initial data points (based on the previous run-through’s means) until the variation of the clusters is no longer changing each time. How different two data points are is measured by comparing the means of different clusters for different variables. 
+
+Picking k, the number of clusters, can be done manually or through comparing the variation of the clusters for increasing values of k. When the reduction in variation is insignificant, we can stop adding to k. Real-world applications of this method include image segmentation, recommendation engines (like Spotify 'For You' Playlists) or customer segmentation.
